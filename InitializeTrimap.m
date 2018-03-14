@@ -1,4 +1,5 @@
 function trimap = InitializeTrimap(img)
+    imshow(img);
     rect=getrect                           % select rectangle
 
     [height, width, depth] = size(img);
