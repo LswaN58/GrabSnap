@@ -1,6 +1,6 @@
 function trimap = InitializeTrimap(img)
     imshow(img);
-    rect=getrect                           % select rectangle
+    rect=getrect;                           % select rectangle
 
     [height, width, depth] = size(img);
     trimap = zeros(height, width);
@@ -8,7 +8,7 @@ function trimap = InitializeTrimap(img)
     figure;
     imshow(trimap);
 
-    figure;
-    I2=imcrop(img,rect);
-    imshow(I2)
+    %figure;
+    %I2=imcrop(img,rect);
+    %imshow(I2)
 end
