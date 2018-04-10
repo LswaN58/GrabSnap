@@ -53,6 +53,7 @@ function [] = test_LearnGMMParams()
     [GMM_fg, GMM_bg] = InitializeGMM(GMM_data, T);
     compAssignments = GetPixelComponents(GMM_data, T, T,  GMM_fg, GMM_bg);
     [GMM_fgn, GMM_bgn] = LearnGMMParams(GMM_data, T, compAssignments);
+    [energy, cut] = MinCutImg(orig_img, T, T, compAssignments, GMM_fg, GMM_bg)
     %disp(GMM_bgn.mu)
     %disp(GMM_bg.mu)
     

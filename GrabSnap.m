@@ -5,6 +5,7 @@ filename = '.\Test_Images\police_dog_training_PubD.jpg';
 img = imread(filename);
 
 trimap = InitializeTrimap(img);
+alpha = trimap;
 GMMData = ConvertImDataToGMMData(img);
 [GMM_fg, GMM_bg] = InitializeGMM(GMMData);
 converged = false;
@@ -14,7 +15,8 @@ while converged == false
     % Probably need something for GMM_bg as well.
     params = LearnGMMParams(img, compAssignments, GMM_fg); % step 2 of algo
     % Probably need something for GMM_bg as well.
-    [energy, cut] = MinCutImg(img, GMM_fg, GMM_bg); % step 3 of algo
+    [energy, cut] = MinCutImg(img, alpha, trimap, compAssignments); % step 3 of algo
+    alpha = cut;
     converged = (abs(energy-prev_energy) < EPSILON_CONVERGENCE); % step 4 of algo, sorta.
     prev_energy = energy;
 end
