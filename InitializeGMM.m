@@ -8,18 +8,10 @@ function [GMM_fg, GMM_bg] = InitializeGMM(GMM_data, trimap)
     fgArea = zeros(length_fg,5);
     %questionArea = GMM_data(GMMx(1), GMMy(1), :);
     for i = 1:length_bg
-        bgArea(i, 1) = GMM_data(y_bg(i), x_bg(i), 1);
-        bgArea(i, 2) = GMM_data(y_bg(i), x_bg(i), 2);
-        bgArea(i, 3) = GMM_data(y_bg(i), x_bg(i), 3);
-        bgArea(i, 4) = GMM_data(y_bg(i), x_bg(i), 4);
-        bgArea(i, 5) = GMM_data(y_bg(i), x_bg(i), 5);
+        bgArea(i, :) = GMM_data(y_bg(i), x_bg(i), :);
     end
     for i = 1:length_fg
-        fgArea(i, 1) = GMM_data(y_fg(i), x_fg(i), 1);
-        fgArea(i, 2) = GMM_data(y_fg(i), x_fg(i), 2);
-        fgArea(i, 3) = GMM_data(y_fg(i), x_fg(i), 3);
-        fgArea(i, 4) = GMM_data(y_fg(i), x_fg(i), 4);
-        fgArea(i, 5) = GMM_data(y_fg(i), x_fg(i), 5);
+        fgArea(i, :) = GMM_data(y_fg(i), x_fg(i), :);
     end
     GMM_bg= fitgmdist(bgArea, 5);
     GMM_fg= fitgmdist(fgArea, 5);
