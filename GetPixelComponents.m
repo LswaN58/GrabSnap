@@ -1,5 +1,5 @@
 function compAssignments = GetPixelComponents(GMM_data, Trimap, A,  GMM_fg, GMM_bg)
-    [height, width, depth] = size(GMM_data);
+    [height, width, ~] = size(GMM_data);
     compAssignments = zeros(height, width);
     [compY, compX] = find(Trimap == 1);
     [compYb, compXb] = find(Trimap ~= 1);
@@ -10,8 +10,13 @@ function compAssignments = GetPixelComponents(GMM_data, Trimap, A,  GMM_fg, GMM_
         min = 100000000;
         X = compX(i);
         Y = compY(i);
+        if(A(Y,X) == 0)
+            theta = GMM_fg;
+        else
+            theta = GMM_fg;
+        end
         for j = 1:5
-            [D] = Distance(A(Y,X), j, GMM_fg, GMM_bg, squeeze(GMM_data(Y,X, :)));
+            [D] = Distance(j, theta, squeeze(GMM_data(Y,X, :)));
             if(D < min)
                 mink = j;
                 min = D;
@@ -27,8 +32,13 @@ function compAssignments = GetPixelComponents(GMM_data, Trimap, A,  GMM_fg, GMM_
         min = 100000000;
         X = compXb(i);
         Y = compYb(i);
+        if(A(Y,X) == 0)
+            theta = GMM_bg;
+        else
+            theta = GMM_fg;
+        end
         for j = 1:5
-            [D] = Distance(A(Y,X), j, GMM_fg, GMM_bg, squeeze(GMM_data(Y,X, :)));
+            [D] = Distance(j, theta, squeeze(GMM_data(Y,X, :)));
             if(D < min)
                 mink = j;
                 min = D;
