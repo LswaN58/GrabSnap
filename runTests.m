@@ -50,9 +50,13 @@ function [] = test_LearnGMMParams()
     orig_img = imread('Test_Images/small_img1.jpg');
     T = InitializeTrimap(orig_img);
     [GMM_data] = ConvertImDataToGMMData(orig_img);
+    disp('starting to init GMM')
     [GMM_fg, GMM_bg] = InitializeGMM(GMM_data, T);
+    disp('finished init of GMM')
     compAssignments = GetPixelComponents(GMM_data, T, T,  GMM_fg, GMM_bg);
+    disp('starting to learn GMM')
     [GMM_fgn, GMM_bgn] = LearnGMMParams(GMM_data, T, compAssignments);
+    disp('finished learning of GMM')
     [energy, cut] = MinCutImg(orig_img, T, T, compAssignments, GMM_fg, GMM_bg)
     %disp(GMM_bgn.mu)
     %disp(GMM_bg.mu)

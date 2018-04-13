@@ -1,122 +1,102 @@
 function [energy, cut] = MinCutImg(img, A, T, compAssignments, GMM_fg, GMM_bg)
     [height, width, depth] = size(img);
+    edges = GenerateAllWeightedEdges(img, A, T, compAssignments, GMM_fg, GMM_bg);
+    G = graph(edges(1, :), edges(2, :), edges(3, :));
+    [energy, ~, fg_pix, bg_pix] = maxflow(G, height*width+1, height*width+2);
+    cut = zeros(height, width);
+    for i = 1:length(fg_pix)
+        if (fg_pix(i) ~= height*width+1)
+            row = floor((fg_pix(i)-1) / width)+1;
+            col = fg_pix(i) - (row-1)*width;
+            cut(row, col) = 1;
+        end
+    end
+end
+
+function weighted_edges = GenerateAllWeightedEdges(img, A, T, compAssignments, GMM_fg, GMM_bg)
+    % Note, pixel_edges are edges connecting a pixel to a pixel;
+    % terminal_edges connect a pixel with a terminal.
     pixel_edges = GenerateUnweightedPixelEdges(img);
-    beta = GenerateBeta(img, pixel_edges)
-    % Note, pixel_edges are edges leaving a pixel;
-    % terminal_edges are leaving a terminal.
-    pixel_edges = weightPixelEdges(pixel_edges, A, T, compAssignments, GMM_fg, GMM_bg, beta);
+    beta = GenerateBeta(img, pixel_edges);
+    pixel_edges = weightPixelEdges(pixel_edges, size(img), A, beta);
     terminal_edges = GenerateTerminalEdges(img, A, T, compAssignments, GMM_fg, GMM_bg);
-    energy = pixel_edges;
-    cut = terminal_edges;
+    weighted_edges = [pixel_edges, terminal_edges];
 end
 
 function edges = GenerateUnweightedPixelEdges(img)
 % function to generate all edges of neighboring pixels in an image of given dimensions.
 % dimensions should simply be [height, width] of the image.
 % Uses neighborhoods of radius 1 (8-neighborhoods).
-% for an MxN image, returns an MxNx10 matrix,
-% where each entry is a cell, holding array [row, col].
-% There are 10 entries per pixel, including 8 neighbors & 2 terminals.
-% From 1 to 10, order of neighbors is: upper, left, upper-left, lower,
-%    right, lower-right, upper-right, lower-left, source, sink.
-% If a pixel does not have a corresponding neighbor for one of the entries,
-% the array has row = col = -1.
+% The edges matrix has two rows, where each column contains endpoint
+% indices of an edge. Indices are based on row-wise walk of input image.
+% The indices are simply used to denote a vertex in graph.
 % Edge weights must be added later.
-    lambda = 1;
     img_dim = size(img);
     m = img_dim(1);
     n = img_dim(2);
-    edges = cell(m, n, 10);
-    for row = 1:m
+    num_interior_edges = 4*(m-2)*(n-2);
+    num_boundary_edges = 5*(m-2) + 5*(n-2) + 6;
+    expected_num_edges = num_interior_edges + num_boundary_edges;
+    num_edges = 1;
+    edge_origs = zeros(1, expected_num_edges);
+    edge_dests = zeros(1, expected_num_edges);
+    for row = 1:m-1
+        % first, do horizontal edges
+        for col = 1:n-1
+            index = (row-1)*n + col;
+            edge_origs(num_edges) = index;
+            edge_dests(num_edges) = index+1;
+            num_edges = num_edges + 1;
+        end
+        % next, do vertical edges
         for col = 1:n
-            if row > 1
-                edges{row, col, 1} = [row-1, col];
-            else
-                edges{row, col, 1} = [-1, -1];
-            end
-            if col > 1
-                edges{row, col, 2} = [row, col-1];
-            else
-                edges{row, col, 2} = [-1, -1];
-            end
-            if col > 1 && row > 1
-                edges{row, col, 3} = [row-1, col-1];
-            else
-                edges{row, col, 3} = [-1, -1];
-            end
-            if row < m
-                edges{row, col, 4} = [row+1, col];
-            else
-                edges{row, col, 4} = [-1, -1];
-            end
-            if col < n
-                edges{row, col, 5} = [row, col+1];
-            else
-                edges{row, col, 5} = [-1, -1];
-            end
-            if row < m && col < n
-                edges{row, col, 6} = [row+1, col+1];
-            else
-                edges{row, col, 6} = [-1, -1];
-            end
-            if col < n && row > 1
-                edges{row, col, 7} = [row-1, col+1];
-            else
-                edges{row, col, 7} = [-1, -1];
-            end
-            if col > 1 && row < m
-                edges{row, col, 8} = [row+1, col-1];
-            else
-                edges{row, col, 8} = [-1, -1];
-            end
-            edges{row, col, 9} = [0, 1];
-            edges{row, col, 10} = [1, 0];
+            index = (row-1)*n + col;
+            edge_origs(num_edges) = index;
+            edge_dests(num_edges) = index+n;
+            num_edges = num_edges + 1;
+        end
+        % next, diagonal edges to right
+        for col = 1:n-1
+            index = (row-1)*n + col;
+            edge_origs(num_edges) = index;
+            edge_dests(num_edges) = index+n+1;
+            num_edges = num_edges + 1;
+        end
+        % then diagonal edges to left
+        for col = 2:n
+            index = (row-1)*n + col;
+            edge_origs(num_edges) = index;
+            edge_dests(num_edges) = index+n-1;
+            num_edges = num_edges + 1;
         end
     end
+    % finally, add last row of horizontal edges.
+    row = m;
+    for col = 1:n-1
+        index = (row-1)*n + col;
+        edge_origs(num_edges) = index;
+        edge_dests(num_edges) = index+1;
+        num_edges = num_edges + 1;
+    end
+    if num_edges-1 ~= expected_num_edges
+        error('number of edges added doesn''t match expected number');
+    end
+    edges = [edge_origs; edge_dests];
 end
 
-function weighted_edges = weightPixelEdges(edges, A, T, compAssignments, GMM_fg, GMM_bg, beta)
+function weighted_edges = weightPixelEdges(edges, im_size, A, beta)
 % function to add weights to each edge in a set of pixel edges.
-    lambda = 1;
-    edges_dim = size(edges);
-    m = edges_dim(1);
-    n = edges_dim(2);
-    weighted_edges = cell(m, n, 10);
-    for row = 1:m
-        for col = 1:n
-            % generate neighbor weights
-            for neighbor = 1:8
-                % check that neighbor exists.
-                n_cell = edges{row, col, neighbor};
-                if n_cell(1, 1:2) == [-1, -1]
-                    continue;
-                else
-                    n_cell(3) = GenerateEdgeWeight(row, col, n_cell(1), n_cell(2), A, beta);
-                end
-            end
-            % generate terminal weights.
-            % source terminal edge:
-            if T(row, col) == 0
-                weight = 0;
-            elseif T(row, col) == 1
-                weight = lambda * Distance(A(row, col), compAssignments(row, col),...
-                    GMM_fg, GMM_bg, img(row, col));
-            else
-                weight = inf;
-            end
-            edges{row, col, 9}(3) = weight;
-            % sink terminal edge:
-            if T(row, col) == 0
-                weight = inf;
-            elseif T(row, col) == 1
-                weight = lambda * Distance(A(row, col), compAssignments(row, col),...
-                    GMM_fg, GMM_bg, img(row, col));
-            else
-                weight = 0;
-            end
-            edges{row, col, 10}(3) = weight;
-        end
+    width = im_size(2);
+    [~, num_edge] = size(edges);
+    weights = zeros(1, num_edge);
+    for i = 1:num_edge
+        row_s = floor((edges(1, i)-1) / width)+1;
+        col_s = edges(1, i) - (row_s-1)*width;
+        row_d = floor((edges(2, i)-1) / width)+1;
+        col_d = edges(2, i) - (row_d-1)*width;
+        weights(i) = GenerateEdgeWeight(row_s, col_s, row_d, col_d, A, beta);
     end
+    weighted_edges = [edges; weights];
 end
 
 function edges = GenerateTerminalEdges(img, A, T, compAssignments, GMM_fg, GMM_bg)
@@ -128,8 +108,13 @@ function edges = GenerateTerminalEdges(img, A, T, compAssignments, GMM_fg, GMM_b
     img_dim = size(img);
     m = img_dim(1);
     n = img_dim(2);
+    edges = zeros(3, 2*m*n);
+    num_edges = 1;
+    source = m*n+1;
+    sink = m*n+2;
     for row = 1:m
         for col = 1:n
+            index = (row-1)*n + col;
             % source terminal edge:
             if T(row, col) == 0
                 weight = 0;
@@ -139,7 +124,8 @@ function edges = GenerateTerminalEdges(img, A, T, compAssignments, GMM_fg, GMM_b
             else
                 weight = inf;
             end
-            edges{row, col, 1} = [weight];
+            edges(:, num_edges) = [source; index; weight];
+            num_edges = num_edges+1;
             % sink terminal edge:
             if T(row, col) == 0
                 weight = inf;
@@ -149,32 +135,26 @@ function edges = GenerateTerminalEdges(img, A, T, compAssignments, GMM_fg, GMM_b
             else
                 weight = 0;
             end
-            edges{row, col, 2} = [weight];
+            edges(:, num_edges) = [sink; index; weight];
+            num_edges = num_edges+1;
         end
     end
 end
 
 function beta = GenerateBeta(img, edges)
-    img_dim = size(img);
+    [~, num_edge] = size(edges);
+    [height, width, ~] = size(img);
     sum_square_diffs = 0;
     count = 0;
-    for row = 1:img_dim(1)
-        for col = 1:img_dim(2)
-            for neighbor = 1:8
-                % check that neighbor exists.
-                n_cell = edges{row, col, neighbor};
-                if n_cell(1, 1:2) == [-1, -1]
-                    continue;
-                else
-                    p1 = img(row, col, :);
-                    x = n_cell(1);
-                    y = n_cell(2);
-                    p2 = img(x, y, :);
-                    sum_square_diffs = sum_square_diffs + sum((p1-p2).^2);
-                    count = count + 1;
-                end
-            end
-        end
+    for i = 1:num_edge
+        row_s = floor((edges(1, i)-1) / width)+1;
+        col_s = edges(1, i) - (row_s-1)*width;
+        row_d = floor((edges(2, i)-1) / width)+1;
+        col_d = edges(2, i) - (row_d-1)*width;
+        p1 = img(row_s, col_s, :);
+        p2 = img(row_d, col_d, :);
+        sum_square_diffs = sum_square_diffs + sum((p1-p2).^2);
+        count = count + 1;
     end
     avg = sum_square_diffs / count;
     beta = 1./(2.*avg);
