@@ -119,8 +119,8 @@ function edges = GenerateTerminalEdges(img, A, T, compAssignments, GMM_fg, GMM_b
             if T(row, col) == 0
                 weight = 0;
             elseif T(row, col) == 1
-                weight = lambda * Distance(A(row, col), compAssignments(row, col),...
-                    GMM_fg, GMM_bg, img(row, col));
+                weight = lambda * Distance(compAssignments(row, col),...
+                    GMM_fg, img(row, col));
             else
                 weight = inf;
             end
@@ -130,8 +130,8 @@ function edges = GenerateTerminalEdges(img, A, T, compAssignments, GMM_fg, GMM_b
             if T(row, col) == 0
                 weight = inf;
             elseif T(row, col) == 1
-                weight = lambda * Distance(A(row, col), compAssignments(row, col),...
-                    GMM_fg, GMM_bg, img(row, col));
+                weight = lambda * Distance(compAssignments(row, col),...
+                    GMM_bg, img(row, col));
             else
                 weight = 0;
             end

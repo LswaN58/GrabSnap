@@ -47,17 +47,21 @@ function [] = test_GetPixelComponents()
 end
 
 function [] = test_LearnGMMParams()
+    %orig_img = imread('Test_Images/police_dog_training_PubD_no-border.jpg');
     orig_img = imread('Test_Images/small_img1.jpg');
     T = InitializeTrimap(orig_img);
     [GMM_data] = ConvertImDataToGMMData(orig_img);
-    disp('starting to init GMM')
     [GMM_fg, GMM_bg] = InitializeGMM(GMM_data, T);
-    disp('finished init of GMM')
+    disp('starting to get pixel comps')
+    testTic = tic;
     compAssignments = GetPixelComponents(GMM_data, T, T,  GMM_fg, GMM_bg);
+    toc(testTic)
+    disp('finished getting pixel comps')
     disp('starting to learn GMM')
     [GMM_fgn, GMM_bgn] = LearnGMMParams(GMM_data, T, compAssignments);
     disp('finished learning of GMM')
-    [energy, cut] = MinCutImg(orig_img, T, T, compAssignments, GMM_fg, GMM_bg)
+    [energy, cut] = MinCutImg(orig_img, T, T, compAssignments, GMM_fg, GMM_bg);
+    imshow(cut);
     %disp(GMM_bgn.mu)
     %disp(GMM_bg.mu)
     
