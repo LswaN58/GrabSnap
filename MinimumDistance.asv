@@ -1,0 +1,11 @@
+function [Dis, K] = MinimumDistance(GMM, imgPixel)
+%MINIMUMDISTANCE Summary of this function goes here
+%   Detailed explanation goes here
+    w = GMM.NumComponents;
+    D = zeroes(w, 1, 'double')
+    for i = 1:w;
+        D(1, i) = Distance(i,GMM, imgPixel);
+    end
+    [Dis, K] = min(D)
+end
+
