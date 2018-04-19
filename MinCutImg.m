@@ -3,6 +3,8 @@ function [energy, cut] = MinCutImg(img, A, T, compAssignments, GMM_fg, GMM_bg)
     edges = GenerateAllWeightedEdges(img, A, T, compAssignments, GMM_fg, GMM_bg);
     G = graph(edges(1, :), edges(2, :), edges(3, :));
     [energy, ~, fg_pix, bg_pix] = maxflow(G, height*width+1, height*width+2);
+    disp('Starting MinCutImg cut pixel assignments');
+    tic
     cut = zeros(height, width);
     for i = 1:length(fg_pix)
         if (fg_pix(i) ~= height*width+1)
@@ -11,6 +13,7 @@ function [energy, cut] = MinCutImg(img, A, T, compAssignments, GMM_fg, GMM_bg)
             cut(row, col) = 1;
         end
     end
+    toc
 end
 
 function weighted_edges = GenerateAllWeightedEdges(img, A, T, compAssignments, GMM_fg, GMM_bg)
@@ -19,7 +22,10 @@ function weighted_edges = GenerateAllWeightedEdges(img, A, T, compAssignments, G
     pixel_edges = GenerateUnweightedPixelEdges(img);
     beta = GenerateBeta(img, pixel_edges);
     pixel_edges = weightPixelEdges(pixel_edges, size(img), A, beta);
+    disp('Starting MinCutImg terminal edge generation');
+    tic
     terminal_edges = GenerateTerminalEdges(img, A, T, compAssignments, GMM_fg, GMM_bg);
+    toc
     weighted_edges = [pixel_edges, terminal_edges];
 end
 
@@ -119,8 +125,9 @@ function edges = GenerateTerminalEdges(img, A, T, compAssignments, GMM_fg, GMM_b
             if T(row, col) == 0
                 weight = 0;
             elseif T(row, col) == 1
+                % SWAP flipped background & foreground GMMs.
                 weight = lambda * Distance(compAssignments(row, col),...
-                    GMM_fg, img(row, col));
+                    GMM_bg, img(row, col));
             else
                 weight = inf;
             end
@@ -130,8 +137,9 @@ function edges = GenerateTerminalEdges(img, A, T, compAssignments, GMM_fg, GMM_b
             if T(row, col) == 0
                 weight = inf;
             elseif T(row, col) == 1
+                % SWAP flipped background & foreground GMMs.
                 weight = lambda * Distance(compAssignments(row, col),...
-                    GMM_bg, img(row, col));
+                    GMM_fg, img(row, col));
             else
                 weight = 0;
             end

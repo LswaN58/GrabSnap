@@ -1,8 +1,9 @@
 EPSILON_CONVERGENCE = 1.0;
 
 %filename = input('Please enter the file name: ');
-%filename = '.\Test_Images\police_dog_training_PubD.jpg';
-filename = 'Test_Images/small_img2.jpg';
+% filename = './Test_Images/police_dog_training_PubD.jpg';
+% filename = 'Test_Images/small_img2.jpg';
+filename = 'Test_Images/med_img1.jpg';
 img = imread(filename);
 
 trimap = InitializeTrimap(img);
@@ -14,8 +15,14 @@ prev_energy = 0;
 iter = 1;
 while converged == false
     disp(['Started iteration ', num2str(iter), '. Previous energy was ', num2str(prev_energy)]);
+    disp('Starting GetPixelComponents');
+    tic
     compAssignments = GetPixelComponents(GMMData, trimap, alpha, GMM_fg, GMM_bg); % step 1 of algo.
+    toc
+    disp('Starting LearnGMMParams');
+    tic
     params = LearnGMMParams(GMMData, alpha, compAssignments); % step 2 of algo
+    toc
     [energy, cut] = MinCutImg(img, alpha, trimap, compAssignments, GMM_fg, GMM_bg); % step 3 of algo
     alpha = cut;
     converged = (abs(energy-prev_energy) < EPSILON_CONVERGENCE); % step 4 of algo, sorta.
