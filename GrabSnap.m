@@ -1,9 +1,8 @@
-EPSILON_CONVERGENCE = 1.0;
-
 %filename = input('Please enter the file name: ');
-% filename = './Test_Images/police_dog_training_PubD.jpg';
-% filename = 'Test_Images/small_img2.jpg';
-filename = 'Test_Images/med_img1.jpg';
+%filename = './Test_Images/police_dog_training_PubD.jpg';
+% filename = './Test_Images/dog-jumping_CC-BY-SA_west-midlands-police.jpg';
+ filename = 'Test_Images/small_img2.jpg';
+%filename = 'Test_Images/small_img3.jpg';
 img = imread(filename);
 
 trimap = InitializeTrimap(img);
@@ -19,17 +18,22 @@ while converged == false
     tic
     compAssignments = GetPixelComponents(GMMData, trimap, alpha, GMM_fg, GMM_bg); % step 1 of algo.
     toc
-    disp('Starting LearnGMMParams');
-    tic
-    params = LearnGMMParams(GMMData, alpha, compAssignments); % step 2 of algo
-    toc
-    [energy, cut] = MinCutImg(img, alpha, trimap, compAssignments, GMM_fg, GMM_bg); % step 3 of algo
-    alpha = cut;
-    converged = (abs(energy-prev_energy) < EPSILON_CONVERGENCE); % step 4 of algo, sorta.
+    [GMM_fg, GMM_bg] = LearnGMMParams(GMMData, alpha, compAssignments); % step 2 of algo
+    [energy, alpha] = MinCutImg(img, alpha, trimap, compAssignments, GMM_fg, GMM_bg); % step 3 of algo
+    epsilon = 0.01 * energy;
+    converged = (abs(energy-prev_energy) < epsilon); % step 4 of algo, sorta.
     prev_energy = energy;
-    imshow(cut);
+    imshow(alpha);
     iter = iter+1;
 end
-matte = GenBorderMatte(img, cut);
+matte = GenBorderMatte(img, alpha);
 paint = GetUserEdit(img);
 
+% show result:
+bg_img = imread('Test_Images/42504671_3b368de9f5_b_CC-BY-schizoform.jpg');
+dim_img = size(img);
+bg_img = imresize(bg_img, dim_img(1:2));
+masked_fg = alpha.*double(img);
+masked_bg = (~alpha).*double(bg_img);
+comp = round(masked_fg + masked_bg)/255;
+imshow(comp);
