@@ -145,37 +145,6 @@ function edges = GenerateTerminalEdges(img, A, T, compAssignments, GMM_fg, GMM_b
         [sink*ones(1, length(bg_pix)); bg_pix; inf*ones(1, length(bg_pix))], ...
         [sink*ones(1, length(free_pix)); free_pix; free_pixel_bg_weights] ];
     edges = [src_edges, dest_edges];
-    
-    
-    
-%     num_edges = 1;
-%     for row = 1:m
-%         for col = 1:n
-%             index = (row-1)*n + col;
-%             % source terminal edge:
-%             if T(row, col) == 0
-%                 weight = 0;
-%             elseif T(row, col) == 1
-%                 % SWAP flipped background & foreground GMMs.
-%                 weight = lambda * 1./MinimumDistance(GMM_fg, img(row, col));
-%             else
-%                 weight = inf;
-%             end
-%             edges(:, num_edges) = [source; index; weight];
-%             num_edges = num_edges+1;
-%             % sink terminal edge:
-%             if T(row, col) == 0
-%                 weight = inf;
-%             elseif T(row, col) == 1
-%                 % SWAP flipped background & foreground GMMs.
-%                 weight = lambda * 1./MinimumDistance(GMM_bg, img(row, col));
-%             else
-%                 weight = 0;
-%             end
-%             edges(:, num_edges) = [sink; index; weight];
-%             num_edges = num_edges+1;
-%         end
-%     end
 end
 
 function beta = GenerateBeta(img, edges)
