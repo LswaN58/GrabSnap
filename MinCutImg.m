@@ -1,6 +1,6 @@
-function [energy, cut] = MinCutImg(img, A, T, compAssignments, GMM_fg, GMM_bg)
+function [energy, cut] = MinCutImg(img, A, T, GMM_fg, GMM_bg)
     [height, width, depth] = size(img);
-    edges = GenerateAllWeightedEdges(img, A, T, compAssignments, GMM_fg, GMM_bg);
+    edges = GenerateAllWeightedEdges(img, A, T, GMM_fg, GMM_bg);
     disp(['Edge count: ', num2str(length(edges))])
     disp('Starting creation of graph');
     tic
@@ -19,7 +19,7 @@ function [energy, cut] = MinCutImg(img, A, T, compAssignments, GMM_fg, GMM_bg)
     end
 end
 
-function weighted_edges = GenerateAllWeightedEdges(img, A, T, compAssignments, GMM_fg, GMM_bg)
+function weighted_edges = GenerateAllWeightedEdges(img, A, T, GMM_fg, GMM_bg)
     % Note, pixel_edges are edges connecting a pixel to a pixel;
     % terminal_edges connect a pixel with a terminal.
     disp('Starting generating normal edges');
@@ -33,7 +33,7 @@ function weighted_edges = GenerateAllWeightedEdges(img, A, T, compAssignments, G
     
     disp('Starting generating terminal edges');
     tic
-    terminal_edges = GenerateTerminalEdges(img, A, T, compAssignments, GMM_fg, GMM_bg);
+    terminal_edges = GenerateTerminalEdges(img, T, GMM_fg, GMM_bg);
     toc
     weighted_edges = [pixel_edges, terminal_edges];
 end
@@ -112,7 +112,7 @@ function weighted_edges = weightPixelEdges(edges, im_size, A, beta)
     weighted_edges = [edges; weights];
 end
 
-function edges = GenerateTerminalEdges(img, A, T, compAssignments, GMM_fg, GMM_bg)
+function edges = GenerateTerminalEdges(img, T, GMM_fg, GMM_bg)
 % function to create a matrix of edges from the terminals to each pixel.
 % for an MxN image, returns an MxNx2 matrix,
 % where each entry is a cell, holding array [weight].
