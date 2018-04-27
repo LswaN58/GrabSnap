@@ -1,7 +1,7 @@
 %filename = input('Please enter the file name: ');
 %filename = './Test_Images/police_dog_training_PubD.jpg';
-filename = './Test_Images/dog_training_2.jpg';
-%  filename = 'Test_Images/small_img2.jpg';
+% filename = './Test_Images/dog_training_2.jpg';
+ filename = 'Test_Images/small_img2.jpg';
 %filename = 'Test_Images/small_img3.jpg';
 img = imread(filename);
 bg_img = imread('Test_Images/42504671_3b368de9f5_b_CC-BY-schizoform.jpg');
