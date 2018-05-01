@@ -1,13 +1,16 @@
 %filename = input('Please enter the file name: ');
-%filename = './Test_Images/police_dog_training_PubD.jpg';
+% filename = './Test_Images/police_dog_training_PubD.jpg';
+% filename = './Test_Images/dog-jumping_CC-BY-SA_west-midlands-police.jpg';
+filename = './Test_Images/tourist-selfie-2_CC-BY-NC-SA_Scott-Ableman.jpg';
 % filename = './Test_Images/dog_training_2.jpg';
- filename = 'Test_Images/small_img2.jpg';
+%  filename = 'Test_Images/small_img2.jpg';
 %filename = 'Test_Images/small_img3.jpg';
 img = imread(filename);
 bg_img = imread('Test_Images/42504671_3b368de9f5_b_CC-BY-schizoform.jpg');
 
+[im_graph, beta] = GenImageGraph(img);
 trimap = InitializeTrimap(img);
-alpha = RunCut(img, trimap);
+alpha = RunCut(img, im_graph, beta, trimap);
 matte = GenBorderMatte(img, alpha);
 
 answer = questdlg('Paint pixels into foreground/background?', 'Edit Trimap', 'Foreground', 'Background', 'No', 'No');
@@ -19,12 +22,12 @@ while strcmp(answer, 'No') == 0
     % take max with fg_mask to force all fg into alpha=1.
     % mult by bg_mask to force all in bg to alpha=0.
     alpha = max(fg_mask, alpha).*bg_mask;
-    imshow(trimap./2);
-    input('Continue?');
-    imshow(alpha);
-    input('Continue?');
+%     imshow(trimap./2);
+%     input('Continue?');
+%     imshow(alpha);
+%     input('Continue?');
 %     [~, alpha] = MinCutImg(img, alpha, trimap, GMM_fg, GMM_bg);
-    alpha = RunCut(img, trimap);
+    alpha = RunCut(img, im_graph, beta, trimap);
     imshow(double(img).*alpha/255);
     answer = questdlg('Paint more pixels into foreground/background?', 'Edit Trimap', 'Foreground', 'Background', 'No', 'No');
 end
