@@ -1,8 +1,45 @@
 <DOCTYPE html>
 <html>
-	<head><title>GrabSnap Project Homepage</title></head>
+	<head>
+    <title>GrabSnap Project Homepage</title>
+    <!-- Based on template code on w3schools.com -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"></script>
+    <!-- End template-based code -->
+  </head>
 	<body>
-    <span>
+    <nav class="navbar navbar-expand-sm bg-dark navbar-dark fixed-top">
+      <a class="navbar-brand" href="#Start"><img src="GrabSnap_logo.jpg" style="width:70px"></a>
+      <ul class="navbar-nav">
+        <li class="nav-item active">
+          <a class="nav-link" href="#Prob_statement">Problem Statement</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#Sln_approach">Solution Approach</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#results">Results</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#lessons_learned">Lessons Learned</a>
+        </li>
+      </ul>
+    </nav>
+    <br>
+
+    <span id="Start"></span>
+    <div class="container-fluid" style="margin-top:90px"></div>
+    <div class="container-fluid">
+      <h1>GrabSnap</h1>
+      <h5>Authors: Bob Effinger & Luke Swanson</h5>
+    </div>
+
+    <span id="Prob_statement"></span>
+    <div class="container-fluid" style="margin-top:95px">
   	  <h3>Problem Statement</h3>
       <div>
         The problem that we attempted to solve was Image Segmentation of Foreground objects from an image.
@@ -16,9 +53,12 @@
         to be able to use it.
         It is also quite important that users do not have to wait for a long time before results are produced from the algorithm.
       </div>
-    </span>
+    </div>
 
-    <span>
+    <hr>
+
+    <span id="Sln_approach"></span>
+      <div class="container-fluid" style="margin-top:105px">
       <h3>Solution Approach</h3>
       <div>
         The major component of our tool is based on the GrabCut algorithm, which in turn is based on an algorithm called Graph Cut.
@@ -39,19 +79,34 @@
         At this point, the user will have an option to modify the trimap by selecting some pixels to define as foreground or background.
         After edits have been made, the tool will re-segment the image.
       </div>
-    </span>
-    <span>
+    </div>
+
+    <hr>
+
+    <span id="results"></span>
+    <div class="container-fluid" style="margin-top:110px">
       <h3>Results</h3>
       <div>
         Our algorithm does not maintain the border details as well as some of the newer current state of the art algorithms for image segmentation.  However Soft Scissors requires the user to trace along the border of an image, while deep matting requires large preprocessing in order to train the Deep Net required to get accurate estimations for the foreground estimation.  We believe that with the simplified user input that our program takes from the user in addition to not require pre-training that other state of the art requires.  This allows our implementation to be an acceptable alternative to the state of the art.
       </div>
-      <!-- <img src=""> -->
-    </span>
-    <span>
+      <img src="Birdv2.gif"><figcaption>High contrast Image without user edits</figcaption><br>
+      <div>
+        <img src="Tourist_alpha.gif">
+        <img src="Tourist_Trimap.gif"><figcaption>Image with user edits to trimap</figcaption><br>
+      </div>
+      <div><img src="Bird_Pre_Edit_w_Background.png"><figcaption>Image before user border edits</figcaption></div>
+      <div><img src="Bird_Post_Edit_w_Background.png"><figcaption>Image after user border edits</figcaption></div>
+    </div>
+
+    <hr>
+
+    <span id="lessons_learned"></span>
+      <div class="container-fluid" style="margin-top:110px">
       <h3>Lessons Learned, Future Work</h3>
       <div>
         We learned a good deal about the difficulties involved in defining a good algorithm for separating complex backgrounds from foreground pixels. In addition, we spent a lot of time trying to understand how to write MATLAB code to run as efficiently as possible, since this algorithm can be fairly computationally intensive. In the future, we would like to investigate re-implementing our tool in another programming language, one which provides better out-of-the-box speed and more user interface tools. We would also like to spend more time tweaking our parameters for the algorithm itself, to achieve better and more consistent results. We would also like to implement border matting, which can help to soften the edges of the extracted foreground, as well as reduce “color bleeding” of the background pixels into the foreground. Finally, it would be nice if our tool had some automatic color matching built in, so that the color and brightness differences between the segmented foreground and replacement background could be reduced.
       </div>
-    </span>
+    </div>
+    <img src="ladybird.jpg">
 	</body>
 </html>
