@@ -14,7 +14,7 @@ function [GMM_fg, GMM_bg] = InitializeGMM(GMM_data, trimap)
     for i = 1:length_fg
         fgArea(i, :) = GMM_data(y_fg(i), x_fg(i), :);
     end
-    GMM_bg= fitgmdist(bgArea, 3);
-    GMM_fg= fitgmdist(fgArea, 3);
+    GMM_bg= fitgmdist(bgArea, 2);
+    GMM_fg= fitgmdist(fgArea, 2);
 end
 

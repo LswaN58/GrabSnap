@@ -8,7 +8,7 @@ GMMData = ConvertImDataToGMMData(img);
 converged = false;
 prev_energy = 0;
 iter = 1;
-while converged == false
+while converged == false && iter < 20
     disp(['Started iteration ', num2str(iter), '. Previous energy was ', num2str(prev_energy)]);
     compAssignments = GetPixelComponents(GMMData, trimap, alpha, GMM_fg, GMM_bg); % step 1 of algo.
     [GMM_fg, GMM_bg] = LearnGMMParams(GMMData, alpha, compAssignments); % step 2 of algo

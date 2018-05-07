@@ -1,6 +1,6 @@
 function [GMM_fg, GMM_bg] = LearnGMMParams(GMM_data, A, K)
     [~, ~, num_data_dimensions] = size(GMM_data);
-    num_k = 3;
+    num_k = 2;
     %params = [10, 5; 2, 3];
     newMean = zeros(num_k, num_data_dimensions);
     newCovarience = zeros(num_data_dimensions,num_data_dimensions,num_k);
